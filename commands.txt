@@ -1,0 +1,83 @@
+================================================================
+  BLUETOOTH COMMAND REFERENCE
+  bluetooth-hydroponics-pump — Arduino Uno Firmware
+================================================================
+
+Send commands from any Bluetooth terminal app (e.g. "Serial
+Bluetooth Terminal" on Android). Pair with HC-05 first
+(default PIN: 1234 or 0000).
+
+Make sure your terminal app sends a newline (\n) at the end
+of each command — most apps do this by default.
+
+----------------------------------------------------------------
+  COMMANDS
+----------------------------------------------------------------
+
+  Command    Effect
+  ─────────  ─────────────────────────────────────────────────
+
+  ON         Turn the pump ON immediately.
+             Switches to MANUAL mode.
+             Auto-cycle is cancelled.
+
+             Example: send "ON"
+             Serial output: [PUMP] ON
+
+  ─────────────────────────────────────────────────────────────
+
+  OFF        Turn the pump OFF immediately.
+             Switches to MANUAL mode.
+             Auto-cycle is cancelled.
+
+             Example: send "OFF"
+             Serial output: [PUMP] OFF
+
+  ─────────────────────────────────────────────────────────────
+
+  AUTO       Enable automatic timed cycle mode.
+             Pump turns ON immediately for 10 seconds,
+             then OFF for 30 seconds, and repeats
+             indefinitely until ON or OFF is sent.
+
+             Cycle:
+               ON  → 10 seconds
+               OFF → 30 seconds
+               (repeat)
+
+             To change timings, edit these constants in the .ino:
+               PUMP_ON_DURATION   = 10000  (ms)
+               PUMP_OFF_DURATION  = 30000  (ms)
+
+             Example: send "AUTO"
+             Serial output: [MODE] AUTO enabled
+
+  ─────────────────────────────────────────────────────────────
+
+  STATUS     Returns the current operating mode and pump state.
+             Does NOT change anything.
+
+             Example: send "STATUS"
+             BT response:
+               Mode: AUTO   (or MANUAL)
+               Pump: ON     (or OFF)
+
+  ─────────────────────────────────────────────────────────────
+
+  (unknown)  Any unrecognized input returns:
+             "ERR: Unknown command. Use ON / OFF / AUTO / STATUS"
+
+----------------------------------------------------------------
+  NOTES
+----------------------------------------------------------------
+
+  · Commands are case-insensitive: "on", "ON", "On" all work.
+  · Leading/trailing spaces are stripped automatically.
+  · Sending ON or OFF while in AUTO mode cancels auto-cycle
+    and switches to MANUAL immediately.
+  · The firmware uses millis() — no blocking delays — so
+    commands are always processed promptly even during AUTO.
+
+================================================================
+  Author: Jeremy A. | 2026
+================================================================

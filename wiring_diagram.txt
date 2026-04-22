@@ -1,0 +1,101 @@
+================================================================
+  WIRING DIAGRAM — Bluetooth Hydroponics Pump Controller
+  Arduino Uno + HC-05 + 5V Relay + DC Water Pump
+================================================================
+
+----------------------------------------------------------------
+  1. HC-05 BLUETOOTH MODULE
+----------------------------------------------------------------
+
+  HC-05 Pin    →   Arduino / Connection
+  ---------        -------------------------------------------
+  VCC          →   Arduino 5V
+  GND          →   Arduino GND
+  TXD          →   Arduino D2  (SoftwareSerial RX)
+  RXD          →   Arduino D3  via voltage divider ⚠️
+
+  ⚠️  VOLTAGE DIVIDER on HC-05 RXD (IMPORTANT):
+  The HC-05 RXD pin is 3.3 V tolerant ONLY.
+  Arduino D3 outputs 5 V — this will damage the HC-05 over time.
+
+  Use a resistor divider to bring 5 V → ~3.3 V:
+
+       Arduino D3 ──[ 1kΩ ]──┬── HC-05 RXD
+                              │
+                           [ 2kΩ ]
+                              │
+                             GND
+
+  (A 10kΩ / 20kΩ pair also works — just maintain the 2:1 ratio)
+
+----------------------------------------------------------------
+  2. RELAY MODULE (controls the pump)
+----------------------------------------------------------------
+
+  Relay Pin    →   Arduino / Connection
+  ---------        -------------------------------------------
+  VCC          →   Arduino 5V
+  GND          →   Arduino GND
+  IN           →   Arduino D8
+
+  Relay terminal wiring:
+  ┌────────────────────────────────────────────┐
+  │  COM  ── Positive terminal of external     │
+  │           power supply                     │
+  │  NO   ── Positive wire of pump             │
+  │  NC   ── Leave unconnected                 │
+  └────────────────────────────────────────────┘
+
+  Pump negative wire → Negative terminal of external power supply.
+
+  ⚠️  POWER WARNING — READ THIS:
+  ┌─────────────────────────────────────────────────────────┐
+  │  NEVER power the pump directly from the Arduino 5V pin. │
+  │  Even small pumps draw 200–500 mA on startup,           │
+  │  which exceeds the Arduino's 200 mA total I/O budget    │
+  │  and WILL damage the voltage regulator or reset the     │
+  │  microcontroller.                                        │
+  │                                                         │
+  │  Always use a SEPARATE power supply for the pump,       │
+  │  switched through the relay.                            │
+  └─────────────────────────────────────────────────────────┘
+
+----------------------------------------------------------------
+  3. COMPLETE CIRCUIT OVERVIEW
+----------------------------------------------------------------
+
+  [Phone]
+     │  Bluetooth
+     ▼
+  [HC-05]
+     │  TX → D2
+     │  RX → D3 (via divider)
+     ▼
+  [Arduino Uno]
+     │  D8 → Relay IN
+     ▼
+  [5V Relay Module]
+     │  COM ← External PSU (+)
+     │  NO  → Pump (+)
+     ▼
+  [DC Water Pump] ── Pump (−) → External PSU (−)
+
+  All GNDs connected:
+    Arduino GND = HC-05 GND = Relay GND = External PSU GND (common ground)
+
+----------------------------------------------------------------
+  4. RECOMMENDED EXTERNAL POWER SUPPLY
+----------------------------------------------------------------
+
+  Pump Voltage    Recommended Supply
+  ────────────    ──────────────────────────────────────────
+  3–5 V pump      4 × AA batteries (6 V) or USB power bank
+  6–12 V pump     7.4 V 2S LiPo + LM2596 buck to pump voltage
+                  OR wall adapter matching pump rated voltage
+
+  Use a multimeter to verify pump voltage before connecting.
+
+================================================================
+  Diagram created for: bluetooth-hydroponics-pump project
+  Author: Jeremy A. | 2026
+================================================================
