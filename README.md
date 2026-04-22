@@ -1,6 +1,6 @@
 <<<<<<< HEAD
 # Bluetooth Hydroponics Pump Controller
-
+For more details see blog section of website : https://portfolio-pa3u.vercel.app/
 An Arduino Uno firmware that controls a water pump via Bluetooth (HC-05).  
 Supports manual ON/OFF commands and a non-blocking automatic timed cycle.
 
