@@ -1,214 +1,87 @@
-<<<<<<< HEAD
-# Bluetooth Hydroponics Pump Controller
-For more details see blog section of website : https://portfolio-pa3u.vercel.app/
-An Arduino Uno firmware that controls a water pump via Bluetooth (HC-05).  
-Supports manual ON/OFF commands and a non-blocking automatic timed cycle.
+# Hydroponic Control System
+
+Arduino firmware for a Bluetooth-controlled hydroponic irrigation rig — manual pump control plus a non-blocking automatic watering cycle, built as the first stage of a modular agri-tech system.
+
+Write-up in the blog section of [portfolio-pa3u.vercel.app](https://portfolio-pa3u.vercel.app/)
 
 ---
 
-## Project Overview
+## What is built
 
-This firmware turns an Arduino Uno into a Bluetooth-controlled irrigation
-controller for a small hydroponic system. Commands are sent from any phone
-Bluetooth terminal app (e.g. **Serial Bluetooth Terminal** on Android).
+An Arduino Uno drives a submersible pump through an optocoupler-isolated relay, taking commands over an HC-05 Bluetooth module from any phone terminal app.
 
-**Auto mode** runs the pump in a continuous cycle:
-- **ON** for 10 seconds
-- **OFF** for 30 seconds
-- Repeats indefinitely until a manual command overrides it
+**Auto mode** cycles the pump 10 seconds on, 30 seconds off, indefinitely, until a manual command overrides it.
 
-All timing uses `millis()` — no `delay()` calls — so the Arduino stays
-responsive to new Bluetooth commands at all times.
+All timing uses `millis()` rather than `delay()`, so the board stays responsive to incoming Bluetooth commands throughout the cycle. A `delay()`-based loop would be deaf to an OFF command for up to 30 seconds — which, with a pump running, is the one moment responsiveness actually matters.
 
----
+### Commands
 
-## Components
+| Command | Effect |
+|---|---|
+| `ON` | Pump on, manual mode |
+| `OFF` | Pump off, manual mode |
+| `AUTO` | Timed cycle — 10 s on / 30 s off |
+| `MANUAL` | Leave auto mode, hold current state |
+| `STATUS` | Report current mode and pump state |
 
-| Component              | Quantity | Notes                                      |
-|------------------------|----------|--------------------------------------------|
-| Arduino Uno            | 1        | Any 5 V Uno clone works                    |
-| HC-05 Bluetooth Module | 1        | Pre-paired at 9600 baud                    |
-| 5 V Relay Module       | 1        | Optocoupler-isolated recommended            |
-| DC Water Pump          | 1        | 3–12 V submersible pump                    |
-| External power supply  | 1        | Match pump voltage; **never power from Arduino** |
-| Jumper wires           | —        | Male-to-male and male-to-female            |
-| Breadboard (optional)  | 1        | For prototyping                            |
+Case-insensitive — `on`, `ON` and `On` all parse.
 
----
+## Hardware
+
+| Component | Qty | Notes |
+|---|---|---|
+| Arduino Uno | 1 | Any 5 V clone |
+| HC-05 Bluetooth module | 1 | Pre-paired, 9600 baud |
+| 5 V relay module | 1 | Optocoupler-isolated recommended |
+| DC water pump | 1 | 3–12 V submersible |
+| External supply | 1 | Match pump voltage — **never drive the pump from the Arduino** |
+| Jumper wires, breadboard | — | For prototyping |
 
 ## Wiring
 
-See **`wiring_diagram.txt`** for a full text description.
-
-Quick summary:
+Full reference in [`wiring_diagram.txt`](./wiring_diagram.txt).
 
 ```
-HC-05  VCC  → Arduino 5V
-HC-05  GND  → Arduino GND
-HC-05  TX   → Arduino D2  (SoftwareSerial RX)
-HC-05  RX   → Arduino D3  (via 1kΩ/2kΩ voltage divider — HC-05 RX is 3.3 V!)
-
-Relay  VCC  → Arduino 5V
-Relay  GND  → Arduino GND
-Relay  IN   → Arduino D8
-
-Pump         → Relay NO (Normally Open) + external power supply
+HC-05  VCC → 5V        Relay VCC → 5V
+HC-05  GND → GND       Relay GND → GND
+HC-05  TX  → D2        Relay IN  → D8
+HC-05  RX  → D3        Pump      → Relay NO + external supply
 ```
 
----
+**D3 to HC-05 RX must go through a 1 kΩ / 2 kΩ divider.** The HC-05's RX pin is 3.3 V and the Arduino drives 5 V; wired directly it works for a while and then stops working permanently.
 
-## How to Upload
+## Uploading
 
-1. Install the **Arduino IDE** (version 1.8+ or 2.x).
-2. Open `bluetooth-hydroponics-pump.ino`.
-3. Select **Board → Arduino Uno** and the correct **COM port**.
-4. Click **Upload**.
-5. Open **Serial Monitor** at **9600 baud** to see debug output.
+1. Open `bluetooth-hydroponics-pump.ino` in the Arduino IDE (1.8+ or 2.x)
+2. Board → Arduino Uno, select the COM port
+3. Upload, then open Serial Monitor at 9600 baud for debug output
 
-> ⚠️ Disconnect the HC-05 TX/RX wires from D2/D3 before uploading.  
-> SoftwareSerial conflicts with the USB upload process.
+**Disconnect HC-05 TX/RX from D2/D3 first** — SoftwareSerial conflicts with the USB upload.
 
----
-
-## Bluetooth Commands
-
-See **`commands.txt`** for a full command reference.
-
-| Command  | Effect                                      |
-|----------|---------------------------------------------|
-| `ON`     | Turn pump ON (manual mode)                  |
-| `OFF`    | Turn pump OFF (manual mode)                 |
-| `AUTO`   | Enable timed cycle (10 s on / 30 s off)     |
-| `STATUS` | Print current mode and pump state           |
-
-Commands are **case-insensitive** — `on`, `ON`, `On` all work.
-
----
-
-## File Structure
+## Files
 
 ```
-bluetooth-hydroponics-pump/
-├── bluetooth-hydroponics-pump.ino   ← main firmware
-├── README.md                        ← this file
-├── wiring_diagram.txt               ← full wiring reference
-└── commands.txt                     ← Bluetooth command reference
+bluetooth-hydroponics-pump.ino   firmware
+wiring_diagram.txt               full wiring reference
+commands.txt                     command reference
 ```
 
 ---
 
-## Author
+## Where this is going
 
-Jeremy A. — Mechanical Engineering Student  
-Hydroponic Automation Project · 2026
-=======
-# 🌱 Hydroponic Control System
+The pump loop is stage one of a larger system design: a battery-powered, remotely controlled grow rig.
 
-A smart, modular hydroponic system powered by Arduino, designed for automated watering, remote control, and scalable agri-tech experimentation.
+- **Power** — 2S/3S 18650 pack → BMS → LM2596 buck converter → shared 5 V rail, common ground throughout
+- **Pan & tilt** — dual-servo directional mount, with non-blocking servo control alongside the existing pump cycle
+- **Water-level sensing**, so auto mode stops on an empty reservoir instead of running the pump dry
+- Mobile app UI, remote monitoring, and irrigation timing driven by sensor history rather than a fixed cycle
+- Solar / agrovoltaic supply
 
----
-
-## 🚀 Overview
-
-This project is a real-world embedded system that combines:
-
-* Robotics (pan & tilt servo system)
-* IoT communication (Bluetooth via HC-05)
-* Power electronics (battery + LM2596 regulation)
-* Automation (pump control & timed irrigation)
-
-Built as an MVP for a scalable, AI-assisted hydroponic farm.
+Those are planned, not built — the firmware in this repo is the pump controller.
 
 ---
 
-## ⚙️ Features
+**Safety.** This is a prototype. Lithium packs and mains-adjacent pump supplies both deserve care; check polarity and current ratings before scaling anything here.
 
-* 📡 **Bluetooth Control (HC-05)**
-
-  * Send commands from phone/laptop
-* 🎯 **Pan & Tilt Mechanism**
-
-  * Dual servo system for directional control
-* 💧 **Automated Pump System**
-
-  * Relay-controlled water flow
-* 🔋 **Battery Powered**
-
-  * 18650 pack + BMS + LM2596 5V regulation
-* 🧠 **Expandable Architecture**
-
-  * Ready for sensors, AI logic, and IoT upgrades
-
----
-
-## 🧩 Hardware Components
-
-* Arduino Uno/Nano
-* HC-05 Bluetooth Module
-* 2x Servo Motors (Pan & Tilt)
-* Water Pump (5V or 12V)
-* LM2596 Buck Converter
-* Lithium Battery Pack (2S/3S with BMS)
-* Relay Module or MOSFET Driver
-* Water Level Sensor (optional)
-
----
-
-## 🔌 System Architecture
-
-Battery → BMS → LM2596 → 5V Rail
-→ Arduino + Servos + HC-05
-
-All grounds are shared (common ground system).
-
----
-
-## 📲 Bluetooth Commands
-
-| Command      | Function               |
-| ------------ | ---------------------- |
-| `PUMP ON`    | Turns pump on          |
-| `PUMP OFF`   | Turns pump off         |
-| `PAN 0-180`  | Move pan servo         |
-| `TILT 0-180` | Move tilt servo        |
-| `HOME`       | Reset servos to center |
-| `SCAN`       | Sweep motion           |
-
----
-
-## 🧠 Code Structure
-
-* Modular command parsing
-* Non-blocking servo control (expandable)
-* Ready for sensor integration
-
----
-
-## 🛠️ Future Improvements
-
-* Water level automation (auto pump stop)
-* Mobile app UI
-* AI-based irrigation optimization
-* Solar + agrovoltaic integration
-* Remote monitoring dashboard
-
----
-
-## 📸 Demo (Coming Soon)
-
-Project build and testing videos will be added.
-
----
-
-## 👤 Author
-
-Jeremy Ahamioje
-Aspiring polymath building scalable agri-tech systems.
-
----
-
-## ⚠️ Disclaimer
-
-This is a prototype system. Ensure proper battery handling and electrical safety when scaling.
-This is a prototype, some features may be absent
->>>>>>> 8bcfef51102e82ad3963666b0c2b436408670f87
+Jeremy Ahamioje — Mechanical Engineering · Hydroponic Automation Project, 2026
